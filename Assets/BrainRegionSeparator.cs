@@ -8,7 +8,7 @@ public class BrainConnectivityVisualizer : MonoBehaviour
     public string csvFilePath; // Set this in the Inspector
     // Add a field to specify the number of top connections to draw
 
-    public bool isDirected = true; // True for symmetrical, false for non-symmetrical
+    public bool isDirected = true; // True for non-symmetrical, false for symmetrical
     public Material lineMaterial;
     public int numberOfTopConnections = 10;
 
@@ -82,7 +82,7 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         for (int i = 1; i < lines.Length; i++)
         {
             string[] values = lines[i].Split(',');
-            int startIndex = isDirected ? i : 1; // Adjust start index based on symmetry
+            int startIndex = isDirected ? 1 : i; // Adjust start index based on symmetry
 
             for (int j = startIndex; j < headers.Length; j++)
             {
