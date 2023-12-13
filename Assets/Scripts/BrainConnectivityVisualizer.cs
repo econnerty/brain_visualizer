@@ -6,18 +6,24 @@ using System;
 
 public class BrainConnectivityVisualizer : MonoBehaviour
 {
-    private string csvFilePath = "coh_eo_mean_df"; // Set this in the Inspector
+    private string csvFilePath = "ddtf_eo_mean_df"; // Set this in the Inspector
     private TextAsset csvFile;
 // Then parse csvContent as needed
 
     // Add a field to specify the number of top connections to draw
 
-    private bool isDirected = false; // True for non-symmetrical, false for symmetrical
+    private bool isDirected = true; // True for non-symmetrical, false for symmetrical
     public Material lineMaterial;
     public Material nonDirectedMaterial;
     private int numberOfTopConnections = 0;
 
     float maxValue = 0f;
+
+    private float mean = 0f;
+    private float sumOfSquaredDifferences = 0f;
+
+    private float std = 0f;
+    private int count = 0;
 
     private List<GameObject> lineGameObjects = new List<GameObject>();
 
@@ -38,6 +44,10 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         this.csvFilePath = csvName;
         this.csvFile = Resources.Load<TextAsset>(this.csvFilePath);
         this.isDirected = directed;
+        this.mean = 0f;
+        this.std = 0f;
+        this.sumOfSquaredDifferences = 0f;
+        this.count = 0;
         ClearExistingLines();
         ParseAdjacencyMatrix();
         LoadBrainRegions();
@@ -49,7 +59,10 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         // Clear existing lines before drawing new ones
         // Update the number of connections
         this.numberOfTopConnections = numberOfConnections;
-
+        this.mean = 0f;
+        this.std = 0f;
+        this.sumOfSquaredDifferences = 0f;
+        this.count = 0;
         // Code to re-render or update the visualization
         ClearExistingLines();
         ParseAdjacencyMatrix();
@@ -109,16 +122,46 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         for (int i = 1; i < lines.Length; i++)
         {
             string[] values = lines[i].Split(',');
-            for (int j = 1; j < headers.Length; j++)
+            for (int j = 0; j < headers.Length; j++)
             {
+                if ((i-1) == j)
+                {
+                    continue;
+                }
                 float connectivity = float.Parse(values[j]);
+                this.count++;
+
+                this.mean += connectivity;
                 if (connectivity > maxValue)
                 {
                     maxValue = connectivity;
                 }
             }
         }
+        this.mean /= this.count;
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            string[] values = lines[i].Split(',');
+            for (int j = 0; j < headers.Length; j++)
+            {
+                if ((i-1) == j)
+                {
+                    continue;
+                }
+                float connectivity = float.Parse(values[j]);
+                this.sumOfSquaredDifferences += Mathf.Pow(connectivity - this.mean, 2);
+            }
+        }
+        this.std = Mathf.Sqrt(sumOfSquaredDifferences / count);
     }
+
+    float NormalizeValue(float value)
+    {
+        // Z-score normalization
+        return (value - mean) / this.std;
+    }
+
 
     void DrawConnections()
     {
@@ -129,17 +172,22 @@ public class BrainConnectivityVisualizer : MonoBehaviour
 
         List<Connection> allConnections = new List<Connection>();
 
-        for (int i = 1; i < lines.Length; i++)
+        for (int i = 1; i < lines.Length; i++) // Start from 1 to skip the header
         {
             string[] values = lines[i].Split(',');
-            int startIndex = isDirected ? 1 : i; // Adjust start index based on symmetry
 
-            for (int j = startIndex; j < headers.Length; j++)
+            for (int j = 0; j < headers.Length; j++) // Iterate over all headers/columns
             {
-                float connectivity = float.Parse(values[j]);
-                if (connectivity > 0)
+                if (i - 1 != j) // Always exclude the diagonal (self-connectivity)
                 {
-                    allConnections.Add(new Connection(brainRegions[headers[i - 1]], brainRegions[headers[j]], connectivity));
+                    if (isDirected || i > j) // For undirected, only take lower triangular matrix
+                    {
+                        float connectivity;
+                        if (float.TryParse(values[j], out connectivity) && connectivity > 0)
+                        {
+                            allConnections.Add(new Connection(brainRegions[headers[i - 1]], brainRegions[headers[j]], connectivity));
+                        }
+                    }
                 }
             }
         }
@@ -162,8 +210,8 @@ public class BrainConnectivityVisualizer : MonoBehaviour
 
         // Define the minimum and maximum widths
         float minWidth = 0.2f;
-        float maxWidth = .8f;
-        int maxConnections = 4500; // Maximum expected number of connections
+        float maxWidth = .6f;
+        int maxConnections = 4700; // Maximum expected number of connections
 
         // Calculate the normalized position between 0 and 1
         float normalized = Mathf.Clamp((numberOfTopConnections - 1) / (float)(maxConnections - 1), 0f, 1f);
@@ -175,21 +223,44 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         lineRenderer.startWidth = lineWidth;
         lineRenderer.endWidth = lineWidth;
 
-        lineRenderer.positionCount = 2;
-        lineRenderer.SetPosition(0, start.transform.position);
-        lineRenderer.SetPosition(1, end.transform.position);
+        //lineRenderer.positionCount = 2;
+        //lineRenderer.SetPosition(0, start.transform.position);
+        //lineRenderer.SetPosition(1, end.transform.position);
         lineRenderer.material.mainTextureScale = new Vector2(2, 2); // Adjust as needed
 
+        // Set up Bézier curve points
+        Vector3 startPoint = start.transform.position;
+        Vector3 endPoint = end.transform.position;
+        Vector3 controlPoint1 = CalculateControlPoint(startPoint, endPoint, true);
+        //Vector3 controlPoint2 = CalculateControlPoint(startPoint, endPoint, false);
 
-        float power = isDirected ? .2f : .75f; // Square root transformation; adjust as needed
-        float normalizedConnectivity = maxValue > 0 ? Mathf.Pow(connectivity / maxValue, power) : 0;
+
+
+        //float power = isDirected ? .1f : .5f; // Square root transformation; adjust as needed
+        float normalizedConnectivity = NormalizeValue(connectivity);
+        normalizedConnectivity = (normalizedConnectivity + 1) / 2; // Adjusting from [-1, 1] to [0, 1]
+        normalizedConnectivity = Mathf.Clamp(normalizedConnectivity, 0f, 1f); // Ensuring it stays within [0, 1]
 
         // Determine color based on normalized connectivity
         Color lineColor = Color.Lerp(Color.blue, Color.red, normalizedConnectivity);
-        lineColor.a = .5f;
+        lineColor = lineColor * 0.8f; // Increase the intensity of the color
+        lineColor.a = .7f;
         lineRenderer.material.SetColor("_Color", lineColor); // Set the main material color
         lineRenderer.startColor = lineColor;
         lineRenderer.endColor = lineColor;
+
+         // Set the number of points on the line
+        int pointsCount = 20; // More points for a smoother curve
+        Vector3[] curvePoints = new Vector3[pointsCount];
+
+        for (int i = 0; i < pointsCount; i++)
+        {
+            float t = i / (float)(pointsCount - 1);
+            curvePoints[i] = CalculateBezierPoint(t, startPoint, controlPoint1, endPoint);
+        }
+
+        lineRenderer.positionCount = pointsCount;
+        lineRenderer.SetPositions(curvePoints);
 
         // Adjust texture mode for scrolling
         //lineRenderer.textureMode = LineTextureMode.Tile;
@@ -197,6 +268,30 @@ public class BrainConnectivityVisualizer : MonoBehaviour
 
 
         //Debug.Log("Connectivity: " + connectivity + ", Color: " + lineColor + ", Normalized: " + normalizedConnectivity);
+    }
+
+    Vector3 CalculateControlPoint(Vector3 startPoint, Vector3 endPoint, bool isStartControlPoint)
+    {
+        Vector3 midPoint = (startPoint + endPoint) / 2;
+        Vector3 upDirection = Vector3.up; // This can be adjusted based on your specific needs
+
+        // Adjust the multiplier to change the curve's height
+        float heightMultiplier = .5f; // Decrease this value to reduce the curve's height
+
+        if (isStartControlPoint)
+        {
+            return midPoint + upDirection * (Vector3.Distance(startPoint, endPoint) / 2 * heightMultiplier);
+        }
+        else
+        {
+            return midPoint - upDirection * (Vector3.Distance(startPoint, endPoint) / 2 * heightMultiplier);
+        }
+    }
+
+    Vector3 CalculateBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2)
+    {
+        // Quadratic Bézier curve formula
+        return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
     }
 
 }

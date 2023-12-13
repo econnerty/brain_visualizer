@@ -42,6 +42,8 @@ public class UIHandler : MonoBehaviour
             case 5: return "ddtf_ec_mean_df";
             case 6: return "gpdc_eo_mean_df";
             case 7: return "gpdc_ec_mean_df";
+            case 8: return "psgp_eo_mean_df";
+            case 9: return "psgp_ec_mean_df";
             default: return "coh_ec_mean_df";
         }
     }

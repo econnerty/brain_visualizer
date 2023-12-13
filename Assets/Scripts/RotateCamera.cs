@@ -1,24 +1,82 @@
 using UnityEngine;
-
+using UnityEngine.EventSystems;
+using UnityEngine.UI; // For UI elements
 public class CircularCameraRotation : MonoBehaviour
 {
-    public float rotationSpeed = 20.0f; // Rotation speed in degrees per second
-    public float radius = 5.0f; // Distance from the center (origin)
+    public float rotationSpeed = 20.0f;
+    public float zoomSpeed = 1.0f;
+    public float manualRotationSpeed = 1.0f;
+    public Transform brainCluster;
 
-    private float angle; // Current angle of rotation
+    private bool isRotating = true;
+    private Vector3 previousPosition;
+    private Quaternion previousRotation;
+    private Vector3 lastMousePosition;
+
+ 
 
     void Update()
     {
-        // Update the angle based on the rotation speed and time
-        angle += rotationSpeed * Time.deltaTime;
-        angle %= 360; // Keep the angle within 0-360 degrees
+        if (isRotating)
+        {
+            RotateAroundBrainCluster();
+        }
+        else
+        {
+            ManualControl();
+        }
+    }
 
-        // Calculate the new position
-        float x = Mathf.Sin(angle * Mathf.Deg2Rad) * radius;
-        float z = Mathf.Cos(angle * Mathf.Deg2Rad) * radius;
-        transform.position = new Vector3(x, transform.position.y, z);
+    private void RotateAroundBrainCluster()
+    {
+        transform.RotateAround(brainCluster.position, Vector3.up, rotationSpeed * Time.deltaTime);
+        transform.LookAt(brainCluster);
+    }
+private void ManualControl()
+{
+    // Check if the pointer is over a UI element
+    if (EventSystem.current.IsPointerOverGameObject())
+    {
+        return; // Do nothing if the pointer is over a UI element
+    }
 
-        // Look at the origin
-        transform.LookAt(Vector3.zero);
+    if (Input.GetMouseButtonDown(0))
+    {
+        lastMousePosition = Input.mousePosition;
+    }
+
+    if (Input.GetMouseButton(0))
+    {
+        Vector3 delta = Input.mousePosition - lastMousePosition;
+        lastMousePosition = Input.mousePosition;
+
+        // Adjust rotation based on camera's view direction
+        Vector3 cameraRight = transform.right;
+        Vector3 cameraUp = transform.up;
+
+        transform.RotateAround(brainCluster.position, cameraUp, delta.x * manualRotationSpeed * Time.deltaTime);
+        transform.RotateAround(brainCluster.position, cameraRight, -delta.y * manualRotationSpeed * Time.deltaTime);
+    }
+
+    float scroll = Input.GetAxis("Mouse ScrollWheel");
+    transform.Translate(0, 0, scroll * zoomSpeed, Space.Self);
+}
+
+    public void ToggleRotation()
+    {
+        isRotating = !isRotating;
+
+        if (isRotating)
+        {
+            // Reset to the original position and rotation when unpaused
+            transform.position = previousPosition;
+            transform.rotation = previousRotation;
+        }
+        else{
+            // Save the original position and rotation when paused
+            this.previousPosition = transform.position;
+            this.previousRotation = transform.rotation;
+
+        }
     }
 }
