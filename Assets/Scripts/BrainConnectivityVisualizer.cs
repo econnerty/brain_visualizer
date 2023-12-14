@@ -242,8 +242,8 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         normalizedConnectivity = Mathf.Clamp(normalizedConnectivity, 0f, 1f); // Ensuring it stays within [0, 1]
 
         // Determine color based on normalized connectivity
-        Color lineColor = Color.Lerp(Color.blue, Color.red, normalizedConnectivity);
-        lineColor = lineColor * 0.8f; // Increase the intensity of the color
+        Color lineColor = Color.Lerp(Color.red, Color.yellow, normalizedConnectivity);
+        lineColor = lineColor * 1.0f; // Increase the intensity of the color
         lineColor.a = .7f;
         lineRenderer.material.SetColor("_Color", lineColor); // Set the main material color
         lineRenderer.startColor = lineColor;

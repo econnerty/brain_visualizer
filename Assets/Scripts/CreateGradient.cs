@@ -15,11 +15,11 @@ public class GradientLegend : MonoBehaviour
     {
         Texture2D texture = new Texture2D(256, 1);
         Gradient gradient = new Gradient();
-        gradient.colorKeys = new GradientColorKey[] { new GradientColorKey(Color.blue, 0.0f), new GradientColorKey(Color.red, 1.0f) };
+        gradient.colorKeys = new GradientColorKey[] { new GradientColorKey(Color.red, 0.0f), new GradientColorKey(Color.yellow, 1.0f) };
 
         for (int i = 0; i < texture.width; i++)
         {
-            Color color = gradient.Evaluate(i / (float)texture.width)*.8f;
+            Color color = gradient.Evaluate(i / (float)texture.width)*1.0f;
             texture.SetPixel(i, 0, color);
         }
 
