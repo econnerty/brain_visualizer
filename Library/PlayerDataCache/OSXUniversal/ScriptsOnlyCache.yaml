@@ -112,11 +112,11 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 1622}
+      Script: {instanceID: 1624}
     - Class: 114
-      Script: {instanceID: 2202}
+      Script: {instanceID: 1692}
     - Class: 114
-      Script: {instanceID: 2234}
+      Script: {instanceID: 2206}
     - Class: 114
       Script: {instanceID: 2488}
     - Class: 114
@@ -158,7 +158,7 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 7104}
     - Class: 114
-      Script: {instanceID: 7856}
+      Script: {instanceID: 7858}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -198,6 +198,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI
     namespaceName: UnityEngine.UI
     className: Image
+  - hash:
+      serializedVersion: 2
+      Hash: 3f6e1dd4fae02dfa2681a41f3a47e94e
+    assemblyName: Assembly-CSharp
+    namespaceName: 
+    className: CircularCameraRotation
   - hash:
       serializedVersion: 2
       Hash: f45600bcc886206dd55a3208474aad61
@@ -276,12 +282,6 @@ ScriptsOnlyBuild:
     assemblyName: Unity.VisualScripting.Core
     namespaceName: Unity.VisualScripting
     className: UnityOnPointerUpMessageListener
-  - hash:
-      serializedVersion: 2
-      Hash: eb340b6fcd6f9fa84f98da0f5f5ed044
-    assemblyName: Assembly-CSharp
-    namespaceName: 
-    className: BrainConnectivityVisualizer
   - hash:
       serializedVersion: 2
       Hash: 7e93247d600e115dac0cdd880de94e99
@@ -1238,11 +1238,11 @@ ScriptsOnlyBuild:
     className: UnityOnSliderValueChangedMessageListener
   - hash:
       serializedVersion: 2
-      Hash: 3f6e1dd4fae02dfa2681a41f3a47e94e
+      Hash: eb340b6fcd6f9fa84f98da0f5f5ed044
     assemblyName: Assembly-CSharp
     namespaceName: 
-    className: CircularCameraRotation
+    className: BrainConnectivityVisualizer
   platform: 2
   scenePathNames:
   - Assets/Scenes/Brain.unity
-  playerPath: /Users/erikconnerty/Desktop/brain_func_conn(v1).app
+  playerPath: /Users/erikconnerty/Desktop/brain_visualizer.app

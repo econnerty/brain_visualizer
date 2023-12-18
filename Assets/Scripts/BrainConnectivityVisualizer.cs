@@ -23,6 +23,8 @@ public class BrainConnectivityVisualizer : MonoBehaviour
     private float mean = 0f;
     private float sumOfSquaredDifferences = 0f;
 
+    private List<Connection> normalizedConnections = new List<Connection>();
+
     private float std = 0f;
     private int count = 0;
 
@@ -34,8 +36,8 @@ public class BrainConnectivityVisualizer : MonoBehaviour
     void Start()
     {
         this.csvFile = Resources.Load<TextAsset>(this.csvFilePath);
-        ParseAdjacencyMatrix();
         LoadBrainRegions();
+        ParseAdjacencyMatrix();
         DrawConnections();
     }
 
@@ -51,7 +53,7 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         this.count = 0;
         ClearExistingLines();
         ParseAdjacencyMatrix();
-        LoadBrainRegions();
+        //LoadBrainRegions();
         DrawConnections();
 
     }
@@ -66,8 +68,8 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         this.count = 0;
         // Code to re-render or update the visualization
         ClearExistingLines();
-        ParseAdjacencyMatrix();
-        LoadBrainRegions();
+        //ParseAdjacencyMatrix();
+        //LoadBrainRegions();
         DrawConnections();
     }
 
@@ -105,61 +107,58 @@ public class BrainConnectivityVisualizer : MonoBehaviour
             // Assuming all your brain region GameObjects are tagged "BrainRegion"
             if (obj.tag == "BrainRegion")
             {
-                brainRegions[obj.name] = obj;
+                this.brainRegions[obj.name] = obj;
             }
         }
     }
 
 
 
-    void ParseAdjacencyMatrix()
+void ParseAdjacencyMatrix()
+{
+    string[] lines = this.csvFile.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+    string[] headers = lines[0].Split(',');
+
+    float sum = 0f;
+    float sumOfSquares = 0f;
+    List<Connection> allConnections = new List<Connection>();
+
+    for (int i = 1; i < lines.Length; i++)
     {
-        //string[] lines = File.ReadAllLines(csvFilePath);
-        //string[] headers = lines[0].Split(',');
-        string[] lines = this.csvFile.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-        
-        string[] headers = lines[0].Split(',');
+        string[] values = lines[i].Split(',');
 
-        for (int i = 1; i < lines.Length; i++)
+        for (int j = 0; j < headers.Length; j++)
         {
-            string[] values = lines[i].Split(',');
-            for (int j = 0; j < headers.Length; j++)
+            if ((i - 1) == j)
             {
-                if ((i-1) == j)
-                {
-                    continue;
-                }
-                float connectivity = float.Parse(values[j]);
-                this.count++;
+                continue;
+            }
 
-                this.mean += connectivity;
-                if (connectivity > this.maxValue)
+            float connectivity;
+            if (float.TryParse(values[j], out connectivity))
+            {
+                // Create connections
+                if (connectivity > 0 && (isDirected || i > j))
                 {
-                    this.maxValue = connectivity;
-                }
-                if (connectivity < this.minValue)
-                {
-                    this.minValue = connectivity;
+                    // Accumulate for mean and standard deviation
+                    sum += connectivity;
+                    sumOfSquares += connectivity * connectivity;
+                    allConnections.Add(new Connection(brainRegions[headers[i - 1]], brainRegions[headers[j]], connectivity));
                 }
             }
         }
-        this.mean /= this.count;
-
-        for (int i = 1; i < lines.Length; i++)
-        {
-            string[] values = lines[i].Split(',');
-            for (int j = 0; j < headers.Length; j++)
-            {
-                if ((i-1) == j)
-                {
-                    continue;
-                }
-                float connectivity = float.Parse(values[j]);
-                this.sumOfSquaredDifferences += Mathf.Pow(connectivity - this.mean, 2);
-            }
-        }
-        this.std = Mathf.Sqrt(sumOfSquaredDifferences / count);
     }
+
+    // Calculate mean and standard deviation
+    this.count = allConnections.Count;
+    this.mean = sum / count;
+    this.std = Mathf.Sqrt((sumOfSquares / count) - (mean * mean));
+
+    // Apply normalization to all connections
+    //List<Connection> zConnections = zScoreNormalizeValues(allConnections);
+    this.normalizedConnections = NormalizeValues(allConnections);
+}
+
 
     List<Connection> NormalizeValues(List<Connection> connections)
     {
@@ -200,40 +199,8 @@ public class BrainConnectivityVisualizer : MonoBehaviour
 
     void DrawConnections()
     {
-        //string[] lines = File.ReadAllLines(csvFilePath);
-        //string[] headers = lines[0].Split(',');
-        string[] lines = csvFile.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-        string[] headers = lines[0].Split(',');
-
-        List<Connection> allConnections = new List<Connection>();
-
-        for (int i = 1; i < lines.Length; i++) // Start from 1 to skip the header
-        {
-            string[] values = lines[i].Split(',');
-
-            for (int j = 0; j < headers.Length; j++) // Iterate over all headers/columns
-            {
-                if (i - 1 != j) // Always exclude the diagonal (self-connectivity)
-                {
-                    if (isDirected || i > j) // For undirected, only take lower triangular matrix
-                    {
-                        float connectivity;
-                        if (float.TryParse(values[j], out connectivity) && connectivity > 0)
-                        {
-                            allConnections.Add(new Connection(brainRegions[headers[i - 1]], brainRegions[headers[j]], connectivity));
-                        }
-                    }
-                }
-            }
-        }
-
-        //Apply min max score normalization to all connections
-        List<Connection> zConnections = zScoreNormalizeValues(allConnections);
-        List<Connection> normalizedConnections = NormalizeValues(zConnections);
-        
-
         // Sort all connections by connectivity in descending order and take the top 'n'
-        var topConnections = normalizedConnections.OrderByDescending(c => c.connectivity).Take(numberOfTopConnections);
+        var topConnections = this.normalizedConnections.OrderByDescending(c => c.connectivity).Take(numberOfTopConnections);
 
         foreach (var connection in topConnections)
         {

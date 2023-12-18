@@ -19,7 +19,7 @@ public class GradientLegend : MonoBehaviour
 
         for (int i = 0; i < texture.width; i++)
         {
-            Color color = gradient.Evaluate(i / (float)texture.width)*1.0f;
+            Color color = gradient.Evaluate(i / (float)texture.width)*1.2f;
             texture.SetPixel(i, 0, color);
         }
 
