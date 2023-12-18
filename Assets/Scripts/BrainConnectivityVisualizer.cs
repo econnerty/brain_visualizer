@@ -6,7 +6,7 @@ using System;
 
 public class BrainConnectivityVisualizer : MonoBehaviour
 {
-    private string csvFilePath = "ddtf_eo_mean_df"; // Set this in the Inspector
+    private string csvFilePath = "ddtf_eo_normalized"; // Set this in the Inspector
     private TextAsset csvFile;
 // Then parse csvContent as needed
 
@@ -18,6 +18,7 @@ public class BrainConnectivityVisualizer : MonoBehaviour
     private int numberOfTopConnections = 0;
 
     float maxValue = 0f;
+    float minValue = 0f;
 
     private float mean = 0f;
     private float sumOfSquaredDifferences = 0f;
@@ -132,9 +133,13 @@ public class BrainConnectivityVisualizer : MonoBehaviour
                 this.count++;
 
                 this.mean += connectivity;
-                if (connectivity > maxValue)
+                if (connectivity > this.maxValue)
                 {
-                    maxValue = connectivity;
+                    this.maxValue = connectivity;
+                }
+                if (connectivity < this.minValue)
+                {
+                    this.minValue = connectivity;
                 }
             }
         }
@@ -156,11 +161,41 @@ public class BrainConnectivityVisualizer : MonoBehaviour
         this.std = Mathf.Sqrt(sumOfSquaredDifferences / count);
     }
 
-    float NormalizeValue(float value)
+    List<Connection> NormalizeValues(List<Connection> connections)
     {
-        // Z-score normalization
-        return (value - mean) / this.std;
+        float max = 0f;
+        float min = 0f;
+        foreach (var connection in connections)
+        {
+            if (connection.connectivity > max)
+            {
+                max = connection.connectivity;
+            }
+            if (connection.connectivity < min)
+            {
+                min = connection.connectivity;
+            }
+        }
+        List<Connection> normalizedConnections = new List<Connection>();
+        foreach (var connection in connections)
+        {
+            float normalizedConnectivity = (connection.connectivity - min) / (max - min);
+            normalizedConnections.Add(new Connection(connection.start, connection.end, normalizedConnectivity));
+        }
+        return normalizedConnections;
     }
+
+    List<Connection> zScoreNormalizeValues(List<Connection> connections)
+    {
+        List<Connection> normalizedConnections = new List<Connection>();
+        foreach (var connection in connections)
+        {
+            float normalizedConnectivity = (connection.connectivity - this.mean) / this.std;
+            normalizedConnections.Add(new Connection(connection.start, connection.end, normalizedConnectivity));
+        }
+        return normalizedConnections;
+    }
+
 
 
     void DrawConnections()
@@ -192,13 +227,17 @@ public class BrainConnectivityVisualizer : MonoBehaviour
             }
         }
 
+        //Apply min max score normalization to all connections
+        List<Connection> zConnections = zScoreNormalizeValues(allConnections);
+        List<Connection> normalizedConnections = NormalizeValues(zConnections);
+        
+
         // Sort all connections by connectivity in descending order and take the top 'n'
-        var topConnections = allConnections.OrderByDescending(c => c.connectivity).Take(numberOfTopConnections);
+        var topConnections = normalizedConnections.OrderByDescending(c => c.connectivity).Take(numberOfTopConnections);
 
         foreach (var connection in topConnections)
         {
             DrawLineBetween(connection.start, connection.end, connection.connectivity);
-            //Debug.Log("Start: " + connection.start.name + ", End: " + connection.end.name + ", Connectivity: " + connection.connectivity);
         }
     }
 
@@ -237,13 +276,14 @@ public class BrainConnectivityVisualizer : MonoBehaviour
 
 
         //float power = isDirected ? .1f : .5f; // Square root transformation; adjust as needed
-        float normalizedConnectivity = NormalizeValue(connectivity);
-        normalizedConnectivity = (normalizedConnectivity + 1) / 2; // Adjusting from [-1, 1] to [0, 1]
-        normalizedConnectivity = Mathf.Clamp(normalizedConnectivity, 0f, 1f); // Ensuring it stays within [0, 1]
+        //float normalizedConnectivity = NormalizeValue(connectivity);
+        //print("Normalized connectivity: " + normalizedConnectivity);
+        //normalizedConnectivity = (normalizedConnectivity + 1) / 2; // Adjusting from [-1, 1] to [0, 1]
+        //normalizedConnectivity = Mathf.Clamp(normalizedConnectivity, 0f, 1f); // Ensuring it stays within [0, 1]
 
         // Determine color based on normalized connectivity
-        Color lineColor = Color.Lerp(Color.red, Color.yellow, normalizedConnectivity);
-        lineColor = lineColor * 1.0f; // Increase the intensity of the color
+        Color lineColor = Color.Lerp(Color.red, Color.yellow, connectivity);
+        lineColor = lineColor * 1.2f; // Increase the intensity of the color
         lineColor.a = .7f;
         lineRenderer.material.SetColor("_Color", lineColor); // Set the main material color
         lineRenderer.startColor = lineColor;
