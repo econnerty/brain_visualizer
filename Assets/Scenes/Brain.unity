@@ -3863,6 +3863,10 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: PSGP (EC)
       m_Image: {fileID: 0}
+    - m_Text: DynSys (EO)
+      m_Image: {fileID: 0}
+    - m_Text: DynSys (EC)
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:

@@ -118,47 +118,47 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 2206}
     - Class: 114
-      Script: {instanceID: 2488}
+      Script: {instanceID: 2238}
     - Class: 114
-      Script: {instanceID: 2508}
+      Script: {instanceID: 2492}
     - Class: 114
-      Script: {instanceID: 2628}
+      Script: {instanceID: 2512}
     - Class: 114
-      Script: {instanceID: 2634}
+      Script: {instanceID: 2632}
     - Class: 114
-      Script: {instanceID: 2832}
+      Script: {instanceID: 2638}
     - Class: 114
-      Script: {instanceID: 3876}
+      Script: {instanceID: 2836}
     - Class: 114
-      Script: {instanceID: 3998}
+      Script: {instanceID: 3880}
     - Class: 114
-      Script: {instanceID: 4106}
+      Script: {instanceID: 4002}
     - Class: 114
-      Script: {instanceID: 4356}
+      Script: {instanceID: 4110}
     - Class: 114
-      Script: {instanceID: 4562}
+      Script: {instanceID: 4360}
     - Class: 114
-      Script: {instanceID: 4940}
+      Script: {instanceID: 4566}
     - Class: 114
-      Script: {instanceID: 4988}
+      Script: {instanceID: 4944}
     - Class: 114
-      Script: {instanceID: 5060}
+      Script: {instanceID: 4992}
     - Class: 114
-      Script: {instanceID: 5306}
+      Script: {instanceID: 5064}
     - Class: 114
-      Script: {instanceID: 5602}
+      Script: {instanceID: 5310}
     - Class: 114
-      Script: {instanceID: 5752}
+      Script: {instanceID: 5606}
     - Class: 114
-      Script: {instanceID: 6054}
+      Script: {instanceID: 5756}
     - Class: 114
-      Script: {instanceID: 6068}
+      Script: {instanceID: 6058}
     - Class: 114
-      Script: {instanceID: 6076}
+      Script: {instanceID: 6072}
     - Class: 114
-      Script: {instanceID: 7104}
+      Script: {instanceID: 6080}
     - Class: 114
-      Script: {instanceID: 7858}
+      Script: {instanceID: 7108}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -282,6 +282,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.VisualScripting.Core
     namespaceName: Unity.VisualScripting
     className: UnityOnPointerUpMessageListener
+  - hash:
+      serializedVersion: 2
+      Hash: eb340b6fcd6f9fa84f98da0f5f5ed044
+    assemblyName: Assembly-CSharp
+    namespaceName: 
+    className: BrainConnectivityVisualizer
   - hash:
       serializedVersion: 2
       Hash: 7e93247d600e115dac0cdd880de94e99
@@ -1236,13 +1242,7 @@ ScriptsOnlyBuild:
     assemblyName: Unity.VisualScripting.Core
     namespaceName: Unity.VisualScripting
     className: UnityOnSliderValueChangedMessageListener
-  - hash:
-      serializedVersion: 2
-      Hash: eb340b6fcd6f9fa84f98da0f5f5ed044
-    assemblyName: Assembly-CSharp
-    namespaceName: 
-    className: BrainConnectivityVisualizer
   platform: 2
   scenePathNames:
   - Assets/Scenes/Brain.unity
-  playerPath: /Users/erikconnerty/Desktop/brain_visualizer.app
+  playerPath: /Users/erikconnerty/Desktop/brain_visualizer(dynsys).app

@@ -6,7 +6,7 @@ using System;
 
 public class BrainConnectivityVisualizer : MonoBehaviour
 {
-    private string csvFilePath = "ddtf_eo_normalized"; // Set this in the Inspector
+    private string csvFilePath = "ddtf_eo_weighted_unity"; // Set this in the Inspector
     private TextAsset csvFile;
 // Then parse csvContent as needed
 

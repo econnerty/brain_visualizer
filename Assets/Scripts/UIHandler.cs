@@ -34,17 +34,19 @@ public class UIHandler : MonoBehaviour
         // Example:
         switch (index)
         {
-            case 0: return "coh_ec_normalized";
-            case 1: return "coh_eo_normalized";
-            case 2: return "ciplv_eo_normalized";
-            case 3: return "ciplv_ec_normalized";
-            case 4: return "ddtf_eo_normalized";
-            case 5: return "ddtf_ec_normalized";
-            case 6: return "gpdc_eo_normalized";
-            case 7: return "gpdc_ec_normalized";
-            case 8: return "psgp_eo_normalized";
-            case 9: return "psgp_ec_normalized";
-            default: return "coh_ec_normalized";
+            case 0: return "coh_ec_weighted_unity";
+            case 1: return "coh_eo_weighted_unity";
+            case 2: return "ciplv_eo_weighted_unity";
+            case 3: return "ciplv_ec_weighted_unity";
+            case 4: return "ddtf_eo_weighted_unity";
+            case 5: return "ddtf_ec_weighted_unity";
+            case 6: return "gpdc_eo_weighted_unity";
+            case 7: return "gpdc_ec_weighted_unity";
+            case 8: return "psgp_eo_weighted_unity";
+            case 9: return "psgp_ec_weighted_unity";
+            case 10: return "dynsys_eo_mean_df";
+            case 11: return "dynsys_ec_mean_df";
+            default: return "ddtf_eo_weighted_unity";
         }
     }
 }
